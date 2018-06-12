@@ -9,7 +9,7 @@ use row::DataRow;
 /// * folds - the number of folds we split the dataset up into.
 /// * current - the number of the current testing fold.
 ///
-fn fold_dataset<'a, T>(rows: &Vec<&'a T>, folds: usize, current: usize) -> (Vec<&'a T>, Vec<&'a T>) {
+fn fold_dataset<'a, T>(rows: &[&'a T], folds: usize, current: usize) -> (Vec<&'a T>, Vec<&'a T>) {
 
     rows.iter()
         .enumerate()
@@ -39,7 +39,7 @@ fn fold_dataset<'a, T>(rows: &Vec<&'a T>, folds: usize, current: usize) -> (Vec<
 /// * rows - The rows of our data set to train against.
 /// * folds - The number of sections we should split our dataset into
 /// * train_fn - A function we should call to return the decision tree.
-pub fn validate<T, F>(rows: &Vec<&T>, folds: usize, train_fn: F ) -> f64 
+pub fn validate<T, F>(rows: &[&T], folds: usize, train_fn: F ) -> f64 
 where T: DataRow,
       F: Fn(Vec<&T>) -> Node {
 
