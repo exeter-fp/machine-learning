@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
 use row::{Col, DataRow};
+use itertools::Itertools;
 
 #[derive(Debug)]
 pub struct Question {
@@ -47,14 +48,14 @@ impl Display for Question {
 
 #[derive(Debug)]
 pub enum Node {
-    Leaf { predictions: HashMap<String, u64> },
+    Leaf { predictions: HashMap<String, usize> },
     Decision { question: Question,
                true_branch: Box<Node>,
                false_branch: Box<Node> } }
 
 
 impl Node {
-    fn new_leaf<T>(rows: &Vec<&T>) -> Self
+    fn new_leaf<T>(rows: &[&T]) -> Self
     where T: DataRow {
         Node::Leaf {
             predictions: class_counts(rows)
@@ -94,8 +95,8 @@ impl Node {
                             let t_id = next_id();
                             let f_id = next_id();
                             
-                            edges.push(format!("\t{}->{}", id, t_id));
-                            edges.push(format!("\t{}->{}", id, f_id));
+                            edges.push(format!("\t{}->{}[fontsize=32,label=\"yes\"];", id, t_id));
+                            edges.push(format!("\t{}->{}[fontsize=32,label=\"no\"];", id, f_id));
 
                             vec![(t_id, &**true_branch), 
                                  (f_id, &**false_branch)]
@@ -105,10 +106,10 @@ impl Node {
             
             let mut labels = traversal.iter().filter_map(|(id, node)| {
                 match node {
-                    Node::Leaf {predictions} => Some(format!("\t{}[shape=circle,label=\"{}\"]", id, 
+                    Node::Leaf {predictions} => Some(format!("\t{}[shape=circle,label=\"{}\"];", id, 
                                                              format!("{:?}", predictions).replace("\"", ""))),
                     Node::Decision {question, ..} => Some(
-                        format!("\t{}[shape=box,label=\"{}\"]", id, question)
+                        format!("\t{}[shape=box,label=\"{}\"];", id, question)
                     )
                 }
             }).collect();
@@ -124,42 +125,34 @@ impl Node {
     }
 }
 
+///
 /// Returns a count of each label in the dataset.
-fn class_counts<T>(rows: &Vec<&T>) -> HashMap<String, u64>
+/// Groups by the label and then sums the occurrences for each label.
+///
+fn class_counts<T>(rows: &[&T]) -> HashMap<String, usize>
 where T: DataRow {
-    let mut counts = HashMap::new();
-
-    for row in rows {
-        let label = &row.label(); 
-        let new_count = 
-            if let Some(count) = counts.get(label) {
-                count + 1
-            } else {
-                1
-            };
-        counts.insert(label.clone(), new_count);
-    }
-
-    counts
+    rows.iter()
+        .group_by(|row| row.label().to_owned())
+        .into_iter()
+        .map(|(label, count)| (label, count.count()))
+        .collect()
 }
 
-/// Calculate the gini score for the dataset :
-fn gini<T>(rows: &Vec<&T>) -> f64 
+///
+/// Calculate the gini score for the dataset
+///
+fn gini<T>(rows: &[&T]) -> f64 
 where T: DataRow {
     let counts = class_counts(rows);
-    let mut impurity = 1.0;
     let len = rows.len();
-    for (_label, count) in counts {
+    counts.values().fold(1.0, |impurity, &count| {
         let probability = count as f64 / len as f64;
-        
-        impurity -= probability.powf(2.0)
-    }
-    
-    impurity
+        impurity - probability.powf(2.0)
+    })
 }
 
 /// Returns a distinct list of the values in this column.
-fn column_values<T>(rows: &Vec<&T>, col: usize) -> Vec<Col>
+fn column_values<T>(rows: &[&T], col: usize) -> Vec<Col>
 where T: DataRow {
     let mut column: Vec<Col> = rows.iter().map(|row| row.value(col).clone()).collect();
     column.sort();
@@ -170,21 +163,21 @@ where T: DataRow {
 
 /// Partitions the dataset into rows that are true and rows that are false
 /// according to the given question.
-fn partition<'a, T>(rows: &'a Vec<&T>, question: &Question) -> (Vec<&'a T>, Vec<&'a T>)
+fn partition<'a, T>(rows: &'a [&T], question: &Question) -> (Vec<&'a T>, Vec<&'a T>)
 where T: DataRow {
    rows.iter().partition(|&row| question.matchit(*row))
 }
 
 /// The uncertainty of the starting node, minus the weighted impurity of
 /// two child nodes.
-fn info_gain<T>(true_rows: &Vec<&T>, false_rows: &Vec<&T>, current: f64) -> f64 
+fn info_gain<T>(true_rows: &[&T], false_rows: &[&T], current: f64) -> f64 
 where T: DataRow {
     let p = true_rows.len() as f64 / (true_rows.len() + false_rows.len()) as f64;
     current - p * gini(true_rows) - (1.0 - p) * gini(false_rows)
 }
 
 /// Find the best way to split the data
-fn find_best_split<T>(rows: &Vec<&T>) -> (f64, Option<Question>) 
+fn find_best_split<T>(rows: &[&T]) -> (f64, Option<Question>) 
 where T: DataRow {
     assert!(rows.len() > 0);
     let mut best_gain = 0.0;
@@ -215,13 +208,15 @@ where T: DataRow {
     (best_gain, best_question)
 }
 
+///
 /// Build up our decision tree.
 ///
 /// #Arguments
 ///
+/// * `rows` - The rows of our dataset. Each row is an object that satisfies the DataRow trait.
 /// * `depth` - The maximum depth of our tree. None if we want it as deep as we can.
 ///
-pub fn build_tree<T>(rows: Vec<&T>, depth: Option<u64>) -> Node 
+pub fn build_tree<T>(rows: &[&T], depth: Option<u64>) -> Node 
 where T: DataRow {
     let depth = depth.map(|d| d - 1);
     match depth {
@@ -234,8 +229,8 @@ where T: DataRow {
                 // We have found a useful feature to partition on.
                 let question = question.unwrap();
                 let (true_rows, false_rows) = partition(&rows, &question);
-                let true_branch = build_tree(true_rows, depth);
-                let false_branch = build_tree(false_rows, depth);
+                let true_branch = build_tree(&true_rows, depth);
+                let false_branch = build_tree(&false_rows, depth);
                 
                 Node::new_decision(question, true_branch, false_branch)
             }
@@ -244,7 +239,7 @@ where T: DataRow {
 }
 
 /// Takes the map of probabilities and chooses the most likely one.
-fn prediction(classification: &HashMap<String, u64>) -> String {
+fn prediction(classification: &HashMap<String, usize>) -> String {
     let (k, _v) = classification
         .iter()
         .max_by(|(_k1, v1), (_k2, v2)| v1.cmp(v2))
@@ -276,14 +271,15 @@ mod test {
     use super::*;
     
     struct Fruit {
+        id: i64,
         colour: String,
         things: i64,
         fruit: String
     }
     
     impl Fruit {
-        fn new(colour: String, things: i64, fruit: String) -> Self {
-            Fruit { colour, things, fruit }
+        fn new(id: i64, colour: String, things: i64, fruit: String) -> Self {
+            Fruit { id, colour, things, fruit }
         }   
     }
     
@@ -310,19 +306,24 @@ mod test {
         fn len(&self) -> usize {
             3   
         }
+        fn id(&self) -> i64 {
+            self.id
+        }
     }
     
     fn training_data<'a>() -> Vec<Fruit> {
-        vec![Fruit::new("Green".to_string(), 3, "Apple".to_string()),
-             Fruit::new("Yellow".to_string(), 3, "Apple".to_string()),
-             Fruit::new("Red".to_string(), 1, "Grape".to_string()),
-             Fruit::new("Red".to_string(), 1, "Grape".to_string()),
-             Fruit::new("Yellow".to_string(), 3, "Lemon".to_string())]
+        vec![Fruit::new(1, "Green".to_string(), 3, "Apple".to_string()),
+             Fruit::new(2, "Yellow".to_string(), 3, "Apple".to_string()),
+             Fruit::new(3, "Red".to_string(), 1, "Grape".to_string()),
+             Fruit::new(4, "Red".to_string(), 1, "Grape".to_string()),
+             Fruit::new(5, "Yellow".to_string(), 3, "Lemon".to_string())]
     }
 
     #[test] 
     fn test_class_counts() {
-        let counts = class_counts(&training_data().iter().collect());
+        let data = training_data();
+        let data: Vec<&Fruit> = data.iter().collect();
+        let counts = class_counts(&data);
         let mut expected = HashMap::new();
         expected.insert("Lemon".to_string(), 1);
         expected.insert("Apple".to_string(), 2);
@@ -333,23 +334,27 @@ mod test {
     
     #[test] 
     fn test_gini_pure() {
-        let p = vec![Fruit::new("Red".to_string(), 3, "Apple".to_string()),
-                     Fruit::new("Green".to_string(), 2, "Apple".to_string())];
-        
-        assert_eq!(0.0, gini(&p.iter().collect()));
+        let p = vec![Fruit::new(1, "Red".to_string(), 3, "Apple".to_string()),
+                     Fruit::new(2, "Green".to_string(), 2, "Apple".to_string())];
+        let p: Vec<&Fruit> = p.iter().collect();
+
+        assert_eq!(0.0, gini(&p));
     }
 
     #[test] 
     fn test_gini_impure() {
-        let p = vec![Fruit::new("Red".to_string(), 3, "Apple".to_string()),
-                     Fruit::new("Red".to_string(), 3, "Orange".to_string())];
+        let p = vec![Fruit::new(1, "Red".to_string(), 3, "Apple".to_string()),
+                     Fruit::new(2, "Red".to_string(), 3, "Orange".to_string())];
+        let p: Vec<&Fruit> = p.iter().collect();
         
-        assert_eq!(0.5, gini(&p.iter().collect()));
+        assert_eq!(0.5, gini(&p));
     }
     
     #[test]
     fn test_column_values() {
-        let cols = column_values(&training_data().iter().collect(), 1);
+        let data = training_data();
+        let data: Vec<&Fruit> = data.iter().collect();
+        let cols = column_values(&data, 1);
         assert_eq!(vec![Col::Int(1),Col::Int(3)], cols);
     }
         
@@ -357,18 +362,18 @@ mod test {
     fn test_question_matches() {
         let q = Question::new("Colour".to_string(), 0, Col::Text("Red".to_string()));
 
-        assert!(q.matchit(&Fruit::new("Red".to_string(), 1, "toenails".to_string())));
-        assert!(!q.matchit(&Fruit::new("Green".to_string(), 1, "spleen".to_string())));
+        assert!(q.matchit(&Fruit::new(1, "Red".to_string(), 1, "toenails".to_string())));
+        assert!(!q.matchit(&Fruit::new(2, "Green".to_string(), 1, "spleen".to_string())));
         
         let q = Question::new("Colour".to_string(), 1, Col::Int(42));
-        assert!(q.matchit(&Fruit::new("Red".to_string(), 42, "toenails".to_string())));
-        assert!(!q.matchit(&Fruit::new("Red".to_string(), 1, "spleen".to_string())));
+        assert!(q.matchit(&Fruit::new(1, "Red".to_string(), 42, "toenails".to_string())));
+        assert!(!q.matchit(&Fruit::new(2, "Red".to_string(), 1, "spleen".to_string())));
     }
 
     #[test]
     fn test_partition() {
         let data = training_data();
-        let data = data.iter().collect();
+        let data: Vec<&Fruit> = data.iter().collect();
         let q = Question::new("Colour".to_string(), 0, Col::Text("Red".to_string()));
         
         let (t, f) = partition(&data, &q);

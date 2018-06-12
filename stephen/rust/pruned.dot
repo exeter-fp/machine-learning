@@ -1,111 +1,63 @@
 digraph Tree {
-	1[shape=box,label="Is Sex == female"]
-	2[shape=box,label="Is Class >= 3"]
-	3[shape=box,label="Is Class >= 2"]
-	4[shape=box,label="Is Siblings >= 3"]
-	5[shape=box,label="Is Class >= 2"]
-	6[shape=box,label="Is Parch >= 1"]
-	7[shape=box,label="Is Age >= 54"]
-	8[shape=box,label="Is Age >= 17"]
-	9[shape=box,label="Is Age >= 28"]
-	10[shape=box,label="Is Age >= 57"]
-	11[shape=box,label="Is Parch >= 2"]
-	12[shape=box,label="Is Age >= 10"]
-	13[shape=box,label="Is Age >= 32.5"]
-	14[shape=box,label="Is Age >= 80"]
-	15[shape=box,label="Is Age >= 0.92"]
-	16[shape=circle,label="{Lived: 2}"]
-	17[shape=box,label="Is Age >= 5"]
-	18[shape=box,label="Is Age >= 39"]
-	19[shape=box,label="Is Age >= 9"]
-	20[shape=circle,label="{Died: 1}"]
-	21[shape=box,label="Is Age >= 24"]
-	22[shape=box,label="Is Age >= 14"]
-	23[shape=box,label="Is Age >= 50"]
-	24[shape=box,label="Is Age >= 23"]
-	25[shape=box,label="Is Siblings >= 3"]
-	26[shape=box,label="Is Age >= 39"]
-	27[shape=box,label="Is Age >= 31"]
-	28[shape=circle,label="{Lived: 1}"]
-	29[shape=box,label="Is Age >= 61"]
-	30[shape=box,label="Is Age >= 18"]
-	31[shape=circle,label="{Lived: 5, Died: 16}"]
-	32[shape=circle,label="{Died: 6, Lived: 1}"]
-	33[shape=circle,label="{Died: 9}"]
-	34[shape=circle,label="{Died: 11, Lived: 1}"]
-	35[shape=circle,label="{Lived: 7, Died: 11}"]
-	36[shape=circle,label="{Died: 23, Lived: 26}"]
-	37[shape=circle,label="{Lived: 35, Died: 12}"]
-	38[shape=circle,label="{Lived: 48, Died: 5}"]
-	39[shape=circle,label="{Lived: 22}"]
-	40[shape=circle,label="{Lived: 11, Died: 1}"]
-	41[shape=circle,label="{Died: 1}"]
-	42[shape=circle,label="{Died: 1, Lived: 14}"]
-	43[shape=circle,label="{Lived: 66}"]
-	44[shape=circle,label="{Died: 19}"]
-	45[shape=circle,label="{Died: 12, Lived: 1}"]
-	46[shape=circle,label="{Died: 18, Lived: 1}"]
-	47[shape=circle,label="{Lived: 18, Died: 1}"]
-	48[shape=circle,label="{Died: 50, Lived: 5}"]
-	49[shape=circle,label="{Died: 36, Lived: 1}"]
-	50[shape=circle,label="{Died: 11, Lived: 8}"]
-	51[shape=circle,label="{Died: 244, Lived: 30}"]
-	52[shape=circle,label="{Died: 11}"]
-	53[shape=circle,label="{Died: 8, Lived: 2}"]
-	54[shape=circle,label="{Lived: 33, Died: 42}"]
-	55[shape=circle,label="{Lived: 4}"]
-	1->2
-	1->3
-	2->4
-	2->5
-	3->6
-	3->7
-	4->8
-	4->9
-	5->10
-	5->11
-	6->12
-	6->13
-	7->14
-	7->15
-	8->16
-	8->17
-	9->18
-	9->19
-	10->20
-	10->21
-	11->22
-	11->23
-	12->24
-	12->25
-	13->26
-	13->27
-	14->28
-	14->29
-	15->30
-	15->31
-	17->32
-	17->33
-	18->34
-	18->35
-	19->36
-	19->37
-	21->38
-	21->39
-	22->40
-	22->41
-	23->42
-	23->43
-	24->44
-	24->45
-	25->46
-	25->47
-	26->48
-	26->49
-	27->50
-	27->51
-	29->52
-	29->53
-	30->54
-	30->55
+	1[shape=box,label="Is Siblings >= 5"];
+	2[shape=circle,label="{Died: 12}"];
+	3[shape=box,label="Is Parch >= 4"];
+	4[shape=box,label="Is Age >= 39"];
+	5[shape=box,label="Is Siblings >= 4"];
+	6[shape=circle,label="{Died: 8}"];
+	7[shape=box,label="Is Age >= 38"];
+	8[shape=box,label="Is Parch >= 2"];
+	9[shape=box,label="Is Age >= 70"];
+	10[shape=circle,label="{Lived: 1}"];
+	11[shape=circle,label="{Died: 1}"];
+	12[shape=box,label="Is Age >= 6"];
+	13[shape=circle,label="{Died: 9}"];
+	14[shape=box,label="Is Age >= 80"];
+	15[shape=box,label="Is Age >= 64"];
+	16[shape=box,label="Is Age >= 17"];
+	17[shape=box,label="Is Age >= 3"];
+	18[shape=circle,label="{Lived: 1}"];
+	19[shape=circle,label="{Died: 6}"];
+	20[shape=circle,label="{Died: 5}"];
+	21[shape=box,label="Is Age >= 63"];
+	22[shape=circle,label="{Lived: 1}"];
+	23[shape=circle,label="{Died: 4}"];
+	24[shape=box,label="Is Sex == male"];
+	25[shape=circle,label="{Died: 1}"];
+	26[shape=circle,label="{Lived: 2}"];
+	27[shape=box,label="Is Age >= 62"];
+	28[shape=circle,label="{Died: 1, Lived: 1}"];
+	29[shape=circle,label="{Lived: 1}"];
+	30[shape=circle,label="{Died: 2, Lived: 2}"];
+	31[shape=circle,label="{Died: 1, Lived: 1}"];
+	1->2[fontsize=32,label="yes"];
+	1->3[fontsize=32,label="no"];
+	3->4[fontsize=32,label="yes"];
+	3->5[fontsize=32,label="no"];
+	4->6[fontsize=32,label="yes"];
+	4->7[fontsize=32,label="no"];
+	5->8[fontsize=32,label="yes"];
+	5->9[fontsize=32,label="no"];
+	7->10[fontsize=32,label="yes"];
+	7->11[fontsize=32,label="no"];
+	8->12[fontsize=32,label="yes"];
+	8->13[fontsize=32,label="no"];
+	9->14[fontsize=32,label="yes"];
+	9->15[fontsize=32,label="no"];
+	12->16[fontsize=32,label="yes"];
+	12->17[fontsize=32,label="no"];
+	14->18[fontsize=32,label="yes"];
+	14->19[fontsize=32,label="no"];
+	15->20[fontsize=32,label="yes"];
+	15->21[fontsize=32,label="no"];
+	16->22[fontsize=32,label="yes"];
+	16->23[fontsize=32,label="no"];
+	17->24[fontsize=32,label="yes"];
+	17->25[fontsize=32,label="no"];
+	21->26[fontsize=32,label="yes"];
+	21->27[fontsize=32,label="no"];
+	24->28[fontsize=32,label="yes"];
+	24->29[fontsize=32,label="no"];
+	27->30[fontsize=32,label="yes"];
+	27->31[fontsize=32,label="no"];
 }

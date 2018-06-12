@@ -4,6 +4,7 @@ extern crate serde;
 extern crate csv;
 extern crate clap;
 extern crate rayon;
+extern crate itertools;
 
 use std::fs::File;
 use std::io::Write;
@@ -58,7 +59,7 @@ fn main() {
         None
     };
         
-    let tree = tree::build_tree(train, depth);
+    let tree = tree::build_tree(&train, depth);
     
     if let Some(dotfile) = matches.value_of("dot") {
         let mut f = File::create(dotfile).unwrap();
@@ -115,7 +116,7 @@ where T: DataRow + Sync {
     // Parallelise the validation. This actually slows it down from 3 -> 6 seconds..
         .into_par_iter() 
         .map(|depth| {
-            (depth, cross_validation::validate(&train, 10, |t| tree::build_tree(t, Some(depth))))
+            (depth, cross_validation::validate(&train, 10, |t| tree::build_tree(&t, Some(depth))))
         })
         .max_by(|(_, ascore),(_, bscore)| ascore.partial_cmp(bscore).unwrap())
         .unwrap();
