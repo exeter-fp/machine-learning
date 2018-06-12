@@ -22,14 +22,10 @@ digraph Tree {
 	21[shape=box,label="Is Age >= 63"];
 	22[shape=circle,label="{Lived: 1}"];
 	23[shape=circle,label="{Died: 4}"];
-	24[shape=box,label="Is Sex == male"];
+	24[shape=circle,label="{Died: 1, Lived: 2}"];
 	25[shape=circle,label="{Died: 1}"];
 	26[shape=circle,label="{Lived: 2}"];
-	27[shape=box,label="Is Age >= 62"];
-	28[shape=circle,label="{Died: 1, Lived: 1}"];
-	29[shape=circle,label="{Lived: 1}"];
-	30[shape=circle,label="{Died: 2, Lived: 2}"];
-	31[shape=circle,label="{Died: 1, Lived: 1}"];
+	27[shape=circle,label="{Lived: 1, Died: 1}"];
 	1->2[fontsize=32,label="yes"];
 	1->3[fontsize=32,label="no"];
 	3->4[fontsize=32,label="yes"];
@@ -56,8 +52,4 @@ digraph Tree {
 	17->25[fontsize=32,label="no"];
 	21->26[fontsize=32,label="yes"];
 	21->27[fontsize=32,label="no"];
-	24->28[fontsize=32,label="yes"];
-	24->29[fontsize=32,label="no"];
-	27->30[fontsize=32,label="yes"];
-	27->31[fontsize=32,label="no"];
 }
