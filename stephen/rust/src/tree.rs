@@ -216,20 +216,30 @@ where T: DataRow {
 }
 
 /// Build up our decision tree.
-pub fn build_tree<T>(rows: Vec<&T>) -> Node 
+///
+/// #Arguments
+///
+/// * `depth` - The maximum depth of our tree. None if we want it as deep as we can.
+///
+pub fn build_tree<T>(rows: Vec<&T>, depth: Option<u64>) -> Node 
 where T: DataRow {
-    
-    let (gain, question) = find_best_split(&rows);
-    if gain == 0.0 {
-        Node::new_leaf(&rows)
-    } else {
-        // We have found a useful feature to partition on.
-        let question = question.unwrap();
-        let (true_rows, false_rows) = partition(&rows, &question);
-        let true_branch = build_tree(true_rows);
-        let false_branch = build_tree(false_rows);
-        
-        Node::new_decision(question, true_branch, false_branch)
+    let depth = depth.map(|d| d - 1);
+    match depth {
+        Some(0) => Node::new_leaf(&rows), // We have gone as deep as we need
+        _ => {
+            let (gain, question) = find_best_split(&rows);
+            if gain == 0.0 {
+                Node::new_leaf(&rows)
+            } else {
+                // We have found a useful feature to partition on.
+                let question = question.unwrap();
+                let (true_rows, false_rows) = partition(&rows, &question);
+                let true_branch = build_tree(true_rows, depth);
+                let false_branch = build_tree(false_rows, depth);
+                
+                Node::new_decision(question, true_branch, false_branch)
+            }
+        }
     }
 }
 
