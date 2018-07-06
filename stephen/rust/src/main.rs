@@ -13,6 +13,7 @@ use rayon::prelude::*;
 
 mod row;
 mod tree;
+mod question;
 mod titanic;
 mod cross_validation;
 
@@ -113,7 +114,7 @@ fn test(tree: &tree::Node, testfile: &str, checkfile: &str) {
 fn get_best_depth<T>(train: &Vec<&T>) -> u64 
 where T: DataRow + Sync {
     let (best_depth, _) = (1_u64..10_u64)
-    // Parallelise the validation. This actually slows it down from 3 -> 6 seconds..
+    // Parallelise the validation.
         .into_par_iter() 
         .map(|depth| {
             (depth, cross_validation::validate(&train, 10, |t| tree::build_tree(&t, Some(depth))))
